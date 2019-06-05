@@ -19,10 +19,10 @@ def leer_decklist(archivo):
         decklist.append([cantidad, nombre])
     return(decklist)
 
-ruta_infect = "Modern_Infect_by_sirpuffsalot.txt"
-ruta_rdw = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-deck_infect = leer_decklist(ruta_infect)
-deck_rdw = leer_decklist(ruta_rdw)
+infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
+rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
+infect_deck = leer_decklist(ruta_infect)
+rdw_deck = leer_decklist(ruta_rdw)
 
 # Consulta al API de scryfall
 scryfall = "https://api.scryfall.com"
@@ -51,14 +51,22 @@ cartas_lista = {"identifiers":[
 
 requests.post("https://api.scryfall.com/cards/collection", json=cartas_lista)
 
-rdw_json = []
-for carta in deck_rdw:
-    llave = "{\"name\": \"" + carta[1] + "\"}"
-    rdw_json.append(llave)
-rdw_json = ", ".join(rdw_json)
-rdw_json = "{\"identifiers\":[" + rdw_json + "]}"
-rdw_json = json.loads(rdw_json)
+def crear_json(decklist):
+    deck_json = []
+    for carta in decklist:
+        llave = "{\"name\": \"" + carta[1] + "\"}"
+        deck_json.append(llave)
+    deck_json = ", ".join(deck_json)
+    deck_json = "{\"identifiers\":[" + deck_json + "]}"
+    deck_json = json.loads(deck_json)
+    return(deck_json)
+
+rdw_json = crear_json(rdw_deck)
 
 rdw_collection = requests.post("https://api.scryfall.com/cards/collection", json=rdw_json)
 
 rdw_collection._content
+rdw_dict = json.loads(rdw_collection._content)
+
+for card in rdw_dict["data"]:
+    print([card["name"], card["cmc"]])
