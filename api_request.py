@@ -39,21 +39,12 @@ def crear_json(decklist):
     deck_json = json.loads(deck_json)
     return(deck_json)
 
-rdw_json = crear_json(rdw_deck)
-
-rdw_collection = requests.post("https://api.scryfall.com/cards/collection", json=rdw_json)
-
-rdw_collection._content
-rdw_dict = json.loads(rdw_collection._content)
-
-rdw_dict["data"][0]["type_line"]
-
 def get_tipo(carta):
     carta = re.sub(" —(.*)", "", carta)
     carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
     return(carta)
 
-def crear_diccionario(datos):
+def crear_stats(datos):
     nombres = []
     for carta in datos:
         nombres.append(carta["name"])
@@ -67,5 +58,27 @@ def crear_diccionario(datos):
     dict_stats = dict(zip(nombres, stats))
     return(dict_stats)
 
-crear_diccionario(rdw_dict["data"])
+rdw_json = crear_json(rdw_deck)
 
+rdw_collection = requests.post("https://api.scryfall.com/cards/collection", json=rdw_json)
+
+rdw_dict = json.loads(rdw_collection._content)["data"]
+
+rdw_stats = crear_stats(rdw_dict)
+
+def flat_lista(lista):
+    flat = []
+    for sub_lista in lista:
+        for elemento in sub_lista:
+            flat.append(elemento)
+    return(flat)
+
+def crear_pool(deck):
+    pool = []
+    for elemento in deck:
+        copias = elemento[0] * [elemento[1]]
+        pool.append(copias)
+    pool = flat_lista(pool)
+    return(pool)
+
+rdw_pool = crear_pool(rdw_deck)
