@@ -21,35 +21,13 @@ def leer_decklist(archivo):
 
 infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-infect_deck = leer_decklist(ruta_infect)
-rdw_deck = leer_decklist(ruta_rdw)
+infect_deck = leer_decklist(infect_ruta)
+rdw_deck = leer_decklist(rdw_ruta)
 
 # Consulta al API de scryfall
 scryfall = "https://api.scryfall.com"
 carta_nombre = "/cards/named?fuzzy="
 collection = "/cards/collection"
-
-war = requests.get(scryfall + "/sets/war")
-eternal_witness = requests.get(scryfall + carta_nombre + "Eternal Witness")
-
-war.status_code
-war._content
-
-eternal_witness.status_code
-eternal_witness._content
-
-ew_json = json.loads(eternal_witness._content)
-ew_json["flavor_text"]
-
-ew_json["cmc"] <= 2
-"Creature" in ew_json["type_line"]
-
-cartas_lista = {"identifiers":[
-    {"name": "Shock"},
-    {"name": "Viashino Pyromancer"}
-]}
-
-requests.post("https://api.scryfall.com/cards/collection", json=cartas_lista)
 
 def crear_json(decklist):
     deck_json = []
@@ -68,5 +46,26 @@ rdw_collection = requests.post("https://api.scryfall.com/cards/collection", json
 rdw_collection._content
 rdw_dict = json.loads(rdw_collection._content)
 
-for card in rdw_dict["data"]:
-    print([card["name"], card["cmc"]])
+rdw_dict["data"][0]["type_line"]
+
+def get_tipo(carta):
+    carta = re.sub(" —(.*)", "", carta)
+    carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
+    return(carta)
+
+def crear_diccionario(datos):
+    nombres = []
+    for carta in datos:
+        nombres.append(carta["name"])
+    
+    stats = []
+    for carta in datos:
+        cmc = carta["cmc"]
+        tipo = get_tipo(carta["type_line"])
+        stats.append({"cmc": cmc, "tipo": tipo})
+    
+    dict_stats = dict(zip(nombres, stats))
+    return(dict_stats)
+
+crear_diccionario(rdw_dict["data"])
+
