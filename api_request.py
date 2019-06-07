@@ -1,6 +1,7 @@
 import requests
 import json
 import re
+from random import choices, seed
 
 # Lectura de decklist
 # "S" al inicio indica que inicia texto de "Sideboard"
@@ -11,23 +12,14 @@ def leer_decklist(archivo):
     decklist = []
     while not deck[i].startswith("S"):
         linea = deck[i]
-        nombre = re.sub("^(\d)+ ", "", linea)
-        nombre = re.sub("\n", "", nombre)
+        nombre = re.sub(r"^(\d)+ ", "", linea)
+        nombre = re.sub(r"\n", "", nombre)
         cantidad = re.sub(" .*", "", linea)
         cantidad = int(cantidad)
         i += 1
         decklist.append([cantidad, nombre])
     return(decklist)
 
-infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
-rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-infect_deck = leer_decklist(infect_ruta)
-rdw_deck = leer_decklist(rdw_ruta)
-
-# Consulta al API de scryfall
-scryfall = "https://api.scryfall.com"
-carta_nombre = "/cards/named?fuzzy="
-collection = "/cards/collection"
 
 def crear_json(decklist):
     deck_json = []
@@ -39,10 +31,12 @@ def crear_json(decklist):
     deck_json = json.loads(deck_json)
     return(deck_json)
 
+
 def get_tipo(carta):
     carta = re.sub(" —(.*)", "", carta)
     carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
     return(carta)
+
 
 def crear_stats(datos):
     nombres = []
@@ -58,13 +52,6 @@ def crear_stats(datos):
     dict_stats = dict(zip(nombres, stats))
     return(dict_stats)
 
-rdw_json = crear_json(rdw_deck)
-
-rdw_collection = requests.post("https://api.scryfall.com/cards/collection", json=rdw_json)
-
-rdw_dict = json.loads(rdw_collection._content)["data"]
-
-rdw_stats = crear_stats(rdw_dict)
 
 def flat_lista(lista):
     flat = []
@@ -72,6 +59,7 @@ def flat_lista(lista):
         for elemento in sub_lista:
             flat.append(elemento)
     return(flat)
+
 
 def crear_pool(deck):
     pool = []
@@ -81,4 +69,32 @@ def crear_pool(deck):
     pool = flat_lista(pool)
     return(pool)
 
+
+scryfall = "https://api.scryfall.com"
+carta_nombre = "/cards/named?fuzzy="
+collection = "/cards/collection"
+
+
+infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
+infect_deck = leer_decklist(infect_ruta)
+
+
+rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
+
+rdw_deck = leer_decklist(rdw_ruta)
+rdw_json = crear_json(rdw_deck)
+rdw_collection = requests.post(scryfall + collection, json=rdw_json)
+rdw_dict = json.loads(rdw_collection._content)["data"]
+rdw_stats = crear_stats(rdw_dict)
 rdw_pool = crear_pool(rdw_deck)
+
+def crear_trials(pool, num_trials):
+    trials = []
+    iteracion = 0
+    while iteracion < num_trials:
+        draw = choices(pool, k=7)
+        trials.append(draw)
+        iteracion += 1
+    return(trials)
+
+rdw_trials = crear_trials(rdw_pool, 10)
