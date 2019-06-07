@@ -97,4 +97,15 @@ def crear_trials(pool, num_trials):
         iteracion += 1
     return(trials)
 
-rdw_trials = crear_trials(rdw_pool, 10)
+rdw_trials = crear_trials(rdw_pool, 100)
+
+cartas_buscadas = ["Mountain", "Shock", "Lightning Strike"]
+
+def probar_draws(cartas_buscadas, trials):
+    resultados = []
+    for trial in trials:
+        exito = set(cartas_buscadas).issubset(trial)
+        resultados.append(exito)
+    return(sum(resultados) / len(resultados))
+
+probar_draws(cartas_buscadas, rdw_trials)
