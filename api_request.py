@@ -3,6 +3,15 @@ import json
 import re
 from random import choices, seed
 
+
+def flat_lista(lista):
+    flat = []
+    for sub_lista in lista:
+        for elemento in sub_lista:
+            flat.append(elemento)
+    return(flat)
+
+
 # Lectura de decklist
 # "S" al inicio indica que inicia texto de "Sideboard"
 def leer_decklist(archivo):
@@ -33,7 +42,9 @@ def crear_json(decklist):
 
 
 def get_tipo(carta):
-    carta = re.sub(" —(.*)", "", carta)
+    # Reemplaza subtipos
+    carta = re.sub(" . (.*)", "", carta)
+    # Quita super tipos mas comunes
     carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
     return(carta)
 
@@ -53,14 +64,6 @@ def crear_stats(datos):
     return(dict_stats)
 
 
-def flat_lista(lista):
-    flat = []
-    for sub_lista in lista:
-        for elemento in sub_lista:
-            flat.append(elemento)
-    return(flat)
-
-
 def crear_pool(deck):
     pool = []
     for elemento in deck:
@@ -69,24 +72,6 @@ def crear_pool(deck):
     pool = flat_lista(pool)
     return(pool)
 
-
-scryfall = "https://api.scryfall.com"
-carta_nombre = "/cards/named?fuzzy="
-collection = "/cards/collection"
-
-
-infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
-infect_deck = leer_decklist(infect_ruta)
-
-
-rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-
-rdw_deck = leer_decklist(rdw_ruta)
-rdw_json = crear_json(rdw_deck)
-rdw_collection = requests.post(scryfall + collection, json=rdw_json)
-rdw_dict = json.loads(rdw_collection._content)["data"]
-rdw_stats = crear_stats(rdw_dict)
-rdw_pool = crear_pool(rdw_deck)
 
 def crear_trials(pool, num_trials):
     trials = []
@@ -97,15 +82,62 @@ def crear_trials(pool, num_trials):
         iteracion += 1
     return(trials)
 
-rdw_trials = crear_trials(rdw_pool, 100)
-
-cartas_buscadas = ["Mountain", "Shock", "Lightning Strike"]
 
 def probar_draws(cartas_buscadas, trials):
-    resultados = []
+    draws = []
     for trial in trials:
         exito = set(cartas_buscadas).issubset(trial)
-        resultados.append(exito)
-    return(sum(resultados) / len(resultados))
+        draws.append(exito)
+    hits = sum(draws)
+    misses = len(draws) - hits
+    hit_rate = hits / len(draws)
+    resultados = {"hits": hits, "misses": misses, "hit_rate": hit_rate}
+    return(resultados)
 
-probar_draws(cartas_buscadas, rdw_trials)
+
+def get_collection(deck_json):
+    deck_collection = requests.post(SCRYFALL + COLLECTION, json=deck_json)
+    deck_collection = json.loads(deck_collection._content)["data"]
+    return(deck_collection)
+
+
+def generar_mazo(ruta):
+    decklist = leer_decklist(ruta)
+    mazo_json = crear_json(decklist)
+    collection = get_collection(mazo_json)
+    stats = crear_stats(collection)
+    mazo = {"decklist": decklist, "stats": stats}
+    return(mazo)
+
+
+def generar_simulacion(mazo, cartas_buscadas, reps=10000):
+    pool = crear_pool(mazo["decklist"])
+    trials = crear_trials(pool, reps)
+    draws = probar_draws(cartas_buscadas, trials)
+    return(draws)
+
+
+SCRYFALL = "https://api.scryfall.com"
+CARDNAME = "/cards/named?fuzzy="
+COLLECTION = "/cards/collection"
+
+
+rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
+rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
+
+rdw_mazo = generar_mazo(rdw_ruta)
+rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
+
+
+# infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
+# infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]
+# infect_deck = leer_decklist(infect_ruta)
+#
+# infect_deck = leer_decklist(infect_ruta)
+# infect_json = crear_json(infect_deck)
+# infect_collection = get_collection(infect_json)
+# infect_stats = crear_stats(infect_collection)
+# 
+# infect_pool = crear_pool(infect_deck)
+# infect_trials = crear_trials(infect_pool, 5000)
+# infect_draws = probar_draws(cartas_buscadas, infect_trials)
