@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication, QMainWindow, QApplication, QAction, qApp)
+from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication, QMainWindow, QApplication, QAction, qApp, QTextEdit, QLabel)
 from PyQt5.QtGui import QFont, QIcon
 
 
@@ -14,24 +14,32 @@ class Example(QMainWindow):
         
         QToolTip.setFont(QFont('SansSerif', 10))
         
-        exitAct = QAction('&Salir', self)        
-        exitAct.setShortcut('Ctrl+Q')
-        exitAct.setStatusTip('Salir de la App')
-        exitAct.triggered.connect(qApp.quit)
+        lbl1 = QLabel('Texto', self)
+        lbl1.move(15, 10)
+
+        #textEdit = QTextEdit()
+        #textEdit.move(20, 10)
+        #self.setCentralWidget(textEdit)
         
-        newAct = QAction("Nuevo", self)
+        newAct = QAction(QIcon("icons/file-plus.svg"), "Nuevo", self)
         newAct.setShortcut("Ctrl+N")
         newAct.setStatusTip("Nueva decklist")
         
-        simAct = QAction("Simular", self)
+        simAct = QAction(QIcon("icons/shuffle.svg"), "Simular", self)
         simAct.setShortcut("Ctrl+I")
         simAct.setStatusTip("Iniciar simulacion")
         
-        guardarAct = QAction("Guardar", self)
+        guardarAct = QAction(QIcon("icons/save.svg"), "Guardar", self)
         guardarAct.setShortcut("Ctrl+G")
         guardarAct.setStatusTip("Guardar simulacion")
 
-        self.statusBar().showMessage("Estado")
+        exitAct = QAction(QIcon('icons/x-square.svg'), '&Salir', self)
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.setStatusTip('Salir de la App')
+        exitAct.triggered.connect(qApp.quit)
+
+
+        self.statusBar().showMessage("Ok")
         
         menubar = self.menuBar()
         fileMenu = menubar.addMenu("&Archivo")
