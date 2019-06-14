@@ -51,7 +51,7 @@ class VentanaPrincipal(QMainWindow):
         self.toolbar.addAction(newAct)
         self.toolbar.addAction(guardarAct)
         self.toolbar.addAction(exitAct)
-        self.toolbar = self.addToolBar("Siimulacion")
+        self.toolbar = self.addToolBar("Simulacion")
         self.toolbar.addAction(simAct)
 
         self.red = RedLayout(self)
@@ -74,8 +74,8 @@ class VentanaPrincipal(QMainWindow):
     def showDialog(self):
         fname = QFileDialog.getOpenFileName(self, "Nuevo decklist", "/home")
         if fname[0]:
-            f = mtg.leer_decklist(fname[0])
-            self.decklistEdit.setText(f[0][1])
+            f = mtg.leer_plain_deck(fname[0])
+            self.red.initGrid.lbl_trials.setText(f[0])
 
 class RedLayout(QWidget):
     

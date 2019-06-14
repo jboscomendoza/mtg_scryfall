@@ -14,13 +14,25 @@ def flat_lista(lista):
 
 # Lectura de decklist
 # "S" al inicio indica que inicia texto de "Sideboard"
-def leer_decklist(archivo):
-    deck = open(archivo, "r")
-    deck = deck.readlines()
+def leer_plain_deck(archivo):
+    plain_deck = open(archivo, "r")
+    plain_deck = plain_deck.readlines()
+    return(plain_deck)
+
+
+def get_decklist_text(plain_deck):
     i = 0
+    decklist_text = []
+    while not plain_deck[i].startswith("S"):
+        decklist_text.append(plain_deck[i])
+        i += 1
+    return(decklist_text)
+
+
+def leer_decklist(plain_deck):
     decklist = []
-    while not deck[i].startswith("S"):
-        linea = deck[i]
+    i = 0
+    for linea in plain_deck:
         nombre = re.sub(r"^(\d)+ ", "", linea)
         nombre = re.sub(r"\n", "", nombre)
         cantidad = re.sub(" .*", "", linea)
@@ -102,7 +114,9 @@ def get_collection(deck_json):
 
 
 def generar_mazo(ruta):
-    decklist = leer_decklist(ruta)
+    deck_plain = leer_plain_deck(ruta)
+    decklist_text = get_decklist_text(deck_plain)
+    decklist = leer_decklist(decklist_text)
     mazo_json = crear_json(decklist)
     collection = get_collection(mazo_json)
     stats = crear_stats(collection)
