@@ -103,7 +103,7 @@ def probar_draws(cartas_buscadas, trials):
     hits = sum(draws)
     misses = len(draws) - hits
     hit_rate = hits / len(draws)
-    resultados = {"Hits": hits, "Misses": misses, "Hit_rate": hit_rate}
+    resultados = {"Hits": hits, "Misses": misses, "Hit rate": hit_rate}
     return(resultados)
 
 
@@ -125,6 +125,8 @@ def generar_mazo(ruta):
 
 
 def generar_simulacion(mazo, cartas_buscadas, reps=10000):
+    if isinstance(cartas_buscadas, str):
+        cartas_buscadas = [cartas_buscadas]
     pool = crear_pool(mazo["decklist"])
     trials = crear_trials(pool, reps)
     draws = probar_draws(cartas_buscadas, trials)
@@ -134,7 +136,7 @@ def generar_simulacion(mazo, cartas_buscadas, reps=10000):
 def print_sim(simulacion):
     sim_texto = []
     for key, value in simulacion.items():
-        texto = k + ": " + str(v) + "\n"
+        texto = key + ": " + str(value) + "\n"
         sim_texto.append(texto)
     sim_texto = "".join(sim_texto)
     return(sim_texto)
@@ -151,8 +153,6 @@ rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
 rdw_mazo = generar_mazo(rdw_ruta)
 rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
 print_sim(rdw_simulacion)
-
-
 
 # infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 # infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]

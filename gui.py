@@ -9,26 +9,27 @@ class App(QWidget):
         super().__init__()
         
         self.lbl_deck = QLabel(u'''
-        Carga un decklist en formato .txt
+        Carga un decklist\nen formato .txt
         ''')
         self.lbl_sim = QLabel(u'''
         Simulación no iniciada
         ''')
+        self.lbl_carta = QLabel("Carta elegida:")
         
         self.btn_cargar = QPushButton("Cargar deklist", self)
         self.btn_cargar.clicked.connect(self.showDialog)
-        self.btn_cargar.setToolTip("Carga un decklist")
         
         self.btn_simular = QPushButton(u"Iniciar simulación")
         self.btn_simular.clicked.connect(self.iniciarSim)
-        self.btn_simular.setToolTip(u"Inicia una simulación")
 
         self.btn_cerrar = QPushButton("&Salir")
         self.btn_cerrar.setShortcut('Ctrl+Q')
         self.btn_cerrar.setStatusTip('Salir de la App')
         self.btn_cerrar.clicked.connect(qApp.quit)
 
-        self.var_deck = []
+        self.inp_cartas = QLineEdit()
+
+        self.var_deck = False
 
         self.initUI()
 
@@ -43,9 +44,11 @@ class App(QWidget):
 
         grid.addWidget(self.btn_cargar, 1, 0)
         grid.addWidget(self.btn_simular, 1, 1)
-        grid.addWidget(self.lbl_deck, 2, 0)
-        grid.addWidget(self.lbl_sim, 2, 1)
-        grid.addWidget(self.btn_cerrar, 3, 0, 1, 2)
+        grid.addWidget(self.lbl_carta, 2, 0)
+        grid.addWidget(self.inp_cartas, 2, 1)
+        grid.addWidget(self.lbl_deck, 3, 0)
+        grid.addWidget(self.lbl_sim, 3, 1)
+        grid.addWidget(self.btn_cerrar, 4, 0, 1, 2)
 
         self.setLayout(grid)
         
@@ -66,12 +69,14 @@ class App(QWidget):
             self.var_deck = mtg.generar_mazo(archivo[0])
     
     def iniciarSim(self):
-        if self.var_deck[0]:
-            sim_resultado = mtg.generar_simulacion(self.var_deck, "Mountain")
-            self.lbl_sim.setText(sim_resultado[0])
+        if isinstance(self.var_deck, dict):
+            carta_buscada = "Light Up the Stage"
+            sim_resultado = mtg.generar_simulacion(self.var_deck, carta_buscada)
+            sim_texto = mtg.print_sim(sim_resultado)
+            sim_texto = "Carta buscada: " + carta_buscada + "\n" + sim_texto
+            self.lbl_sim.setText(sim_texto)
         else:
             self.lbl_sim.setText("Carga un deck")
-
 
 
 class AppMenu(QWidget):
