@@ -20,6 +20,8 @@ class App(QWidget):
         self.btn_cargar.setToolTip("Carga un decklist")
         
         self.btn_simular = QPushButton(u"Iniciar simulación")
+        self.btn_simular.clicked.connect(self.iniciarSim)
+        self.btn_simular.setToolTip(u"Inicia una simulación")
 
         self.btn_cerrar = QPushButton("&Salir")
         self.btn_cerrar.setShortcut('Ctrl+Q')
@@ -61,7 +63,15 @@ class App(QWidget):
             deck_text = "".join(deck_text)
 
             self.lbl_deck.setText(deck_text)
-            self.var_deck = deck_plain
+            self.var_deck = mtg.generar_mazo(archivo[0])
+    
+    def iniciarSim(self):
+        if self.var_deck[0]:
+            sim_resultado = mtg.generar_simulacion(self.var_deck, "Mountain")
+            self.lbl_sim.setText(sim_resultado[0])
+        else:
+            self.lbl_sim.setText("Carga un deck")
+
 
 
 class AppMenu(QWidget):
