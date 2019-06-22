@@ -153,7 +153,6 @@ rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
 rdw_mazo = generar_mazo(rdw_ruta)
 rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
 print_sim(rdw_simulacion)
-
 # infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 # infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]
 # infect_deck = leer_decklist(infect_ruta)
