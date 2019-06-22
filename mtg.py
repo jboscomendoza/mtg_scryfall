@@ -3,13 +3,20 @@ import json
 import re
 from random import choices, seed
 
-
+# Funciones auxiliares
 def aplanar_lista(lista):
     flat = []
     for sub_lista in lista:
         for elemento in sub_lista:
             flat.append(elemento)
     return(flat)
+
+def get_tipo(carta):
+    # Reemplaza subtipos
+    carta = re.sub(" . (.*)", "", carta)
+    # Quita super tipos mas comunes
+    carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
+    return(carta)
 
 
 # Lectura de decklist
@@ -20,17 +27,8 @@ def leer_plain_deck(archivo):
     return(plain_deck)
 
 
-def get_decklist_text(plain_deck):
-    i = 0
-    decklist_text = []
-    while not plain_deck[i].startswith("S"):
-        decklist_text.append(plain_deck[i])
-        i += 1
-    return(decklist_text)
-
-
-def leer_decklist(plain_deck):
-    decklist = []
+def crear_deck_list(plain_deck):
+    deck_list = []
     i = 0
     for linea in plain_deck:
         nombre = re.sub(r"^(\d)+ ", "", linea)
@@ -42,13 +40,13 @@ def leer_decklist(plain_deck):
         except ValueError:
             cantidad = 0
         i += 1
-        decklist.append([cantidad, nombre])
-    return(decklist)
+        deck_list.append([cantidad, nombre])
+    return(deck_list)
 
 
-def crear_json(decklist):
+def crear_json(deck_list):
     deck_json = []
-    for carta in decklist:
+    for carta in deck_list:
         llave = "{\"name\": \"" + carta[1] + "\"}"
         deck_json.append(llave)
     deck_json = ", ".join(deck_json)
@@ -57,29 +55,58 @@ def crear_json(decklist):
     return(deck_json)
 
 
-def get_tipo(carta):
-    # Reemplaza subtipos
-    carta = re.sub(" . (.*)", "", carta)
-    # Quita super tipos mas comunes
-    carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
-    return(carta)
+def get_collection(deck_json):
+    deck_collection = requests.post(SCRYFALL + COLLECTION, json=deck_json)
+    deck_collection = json.loads(deck_collection._content)["data"]
+    return(deck_collection)
 
 
-def crear_stats(datos):
-    nombres = []
-    for carta in datos:
-        nombres.append(carta["name"])
-    
-    stats = []
-    for carta in datos:
-        cmc = carta["cmc"]
+def get_decklist_text(collection, deck_plain):
+    main_deck = range(len(collection))
+    deck_data = []
+
+    for elemento in main_deck:
+        carta = collection[elemento]
+        nombre = carta["name"]
+        
+        numero = 0
+        for texto in deck_plain:
+            if nombre in texto:
+                numero = re.sub(" .*\n", "", texto)
+        
+        costo = carta["mana_cost"]
+        if len(costo) == 0:
+            costo = "Land"
+        else:
+            costo = re.sub(r"\W", "", costo)
+        
         tipo = get_tipo(carta["type_line"])
-        stats.append({"cmc": cmc, "tipo": tipo})
-    
-    dict_stats = dict(zip(nombres, stats))
-    return(dict_stats)
+        rareza = carta["rarity"]
+        precio = carta["prices"]["usd"]
+        
+        carta_data = [numero, nombre, costo, tipo, rareza, precio]
+        carta_data = "; ".join(carta_data)
+        carta_data = carta_data + "\n"
+        
+        deck_data.append(carta_data)
+    return(deck_data)
 
 
+def generar_mazo(ruta):
+    deck_plain = leer_plain_deck(ruta)
+    deck_list = crear_deck_list(deck_plain)
+    mazo_json = crear_json(deck_list)
+    collection = get_collection(mazo_json)
+    decklist_text = get_decklist_text(collection, deck_plain)
+    mazo = {
+        "decklist": deck_list, 
+        "decklist_text": decklist_text, 
+        "collection": collection
+    }
+    return(mazo)
+
+
+# Simulacion
 def crear_pool(deck):
     pool = []
     for elemento in deck:
@@ -109,23 +136,6 @@ def probar_draws(cartas_buscadas, trials):
     hit_rate = hits / len(draws)
     resultados = {"Hits": hits, "Misses": misses, "Hit rate": hit_rate}
     return(resultados)
-
-
-def get_collection(deck_json):
-    deck_collection = requests.post(SCRYFALL + COLLECTION, json=deck_json)
-    deck_collection = json.loads(deck_collection._content)["data"]
-    return(deck_collection)
-
-
-def generar_mazo(ruta):
-    deck_plain = leer_plain_deck(ruta)
-    decklist_text = get_decklist_text(deck_plain)
-    decklist = leer_decklist(decklist_text)
-    mazo_json = crear_json(decklist)
-    collection = get_collection(mazo_json)
-    stats = crear_stats(collection)
-    mazo = {"decklist": decklist, "stats": stats}
-    return(mazo)
 
 
 def generar_simulacion(mazo, cartas_buscadas, reps=10000):
