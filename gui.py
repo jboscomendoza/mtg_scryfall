@@ -25,28 +25,28 @@ Elige cartas a buscar.
 Introduce los nombres separados por punto y coma (;).
         ''')
 
-        self.btn_cargar = QPushButton("Cargar &deklist", self)
-        #self.btn_cargar.setShortcut("Ctrl+D")
-        self.btn_cargar.clicked.connect(self.showDialog)
+        self.btn_abrir = QPushButton("Abrir &deklist", self)
+        self.btn_abrir.setStatusTip("Abrir decklist")
+        self.btn_abrir.clicked.connect(self.showDialog)
 
         self.inp_cartas = QLineEdit()
 
         self.btn_simular = QPushButton(u"&Iniciar simulación")
+        self.btn_simular.setStatusTip("Iniciar simulación")
         self.btn_simular.clicked.connect(self.iniciarSim)
 
         self.btn_cerrar = QPushButton("&Salir")
-        self.btn_cerrar.setStatusTip("Salir de la App")
+        self.btn_cerrar.setStatusTip("Salir")
         self.btn_cerrar.clicked.connect(qApp.quit)
 
         self.inp_cartas = QLineEdit()
 
         self.var_deck = False
         
-
         vbox = QVBoxLayout()
         vbox.setContentsMargins(5, 5, 5, 5)
         vbox.addWidget(topFiller)
-        vbox.addWidget(self.btn_cargar)
+        vbox.addWidget(self.btn_abrir)
         vbox.addWidget(self.lbl_carta)
         vbox.addWidget(self.inp_cartas)
         vbox.addWidget(self.btn_simular)
@@ -60,6 +60,7 @@ Introduce los nombres separados por punto y coma (;).
         self.crearAcciones()
         self.crearMenus()
         self.crearToolbar()
+        self.statusBar().showMessage("")
         widget.setLayout(vbox)
 
     def crearAcciones(self):

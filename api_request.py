@@ -4,7 +4,7 @@ import re
 from random import choices, seed
 
 
-def flat_lista(lista):
+def aplanar_lista(lista):
     flat = []
     for sub_lista in lista:
         for elemento in sub_lista:
@@ -36,7 +36,11 @@ def leer_decklist(plain_deck):
         nombre = re.sub(r"^(\d)+ ", "", linea)
         nombre = re.sub(r"\n", "", nombre)
         cantidad = re.sub(" .*", "", linea)
-        cantidad = int(cantidad)
+        cantidad = re.sub(r"\n", "", cantidad)
+        try:
+            cantidad = int(cantidad)
+        except ValueError:
+            cantidad = 0
         i += 1
         decklist.append([cantidad, nombre])
     return(decklist)
@@ -81,7 +85,7 @@ def crear_pool(deck):
     for elemento in deck:
         copias = elemento[0] * [elemento[1]]
         pool.append(copias)
-    pool = flat_lista(pool)
+    pool = aplanar_lista(pool)
     return(pool)
 
 
