@@ -21,16 +21,16 @@ def get_tipo(carta):
 
 # Lectura de decklist
 # "S" al inicio indica que inicia texto de "Sideboard"
-def leer_plain_deck(archivo):
-    plain_deck = open(archivo, "r")
-    plain_deck = plain_deck.readlines()
-    return(plain_deck)
+def leer_deck_raw(archivo):
+    deck_raw = open(archivo, "r")
+    deck_raw = deck_raw.readlines()
+    return(deck_raw)
 
 
-def crear_deck_list(plain_deck):
+def crear_deck_list(deck_raw):
     deck_list = []
     i = 0
-    for linea in plain_deck:
+    for linea in deck_raw:
         nombre = re.sub(r"^(\d)+ ", "", linea)
         nombre = re.sub(r"\n", "", nombre)
         cantidad = re.sub(" .*", "", linea)
@@ -61,7 +61,7 @@ def get_collection(deck_json):
     return(deck_collection)
 
 
-def get_decklist_text(collection, deck_plain):
+def get_decklist_text(collection, deck_raw):
     main_deck = range(len(collection))
     deck_data = []
 
@@ -70,7 +70,7 @@ def get_decklist_text(collection, deck_plain):
         nombre = carta["name"]
         
         numero = 0
-        for texto in deck_plain:
+        for texto in deck_raw:
             if nombre in texto:
                 numero = re.sub(" .*\n", "", texto)
         
@@ -93,11 +93,12 @@ def get_decklist_text(collection, deck_plain):
 
 
 def generar_mazo(ruta):
-    deck_plain = leer_plain_deck(ruta)
-    deck_list = crear_deck_list(deck_plain)
+    deck_raw = leer_deck_raw(ruta)
+    deck_list = crear_deck_list(deck_raw)
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
-    decklist_text = get_decklist_text(collection, deck_plain)
+    decklist_text = get_decklist_text(collection, deck_raw)
+    decklist_text = "".join(decklist_text)
     mazo = {
         "decklist": deck_list, 
         "decklist_text": decklist_text, 
@@ -161,12 +162,13 @@ CARDNAME = "/cards/named?fuzzy="
 COLLECTION = "/cards/collection"
 
 
-rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
-
-rdw_mazo = generar_mazo(rdw_ruta)
-rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
-print_sim(rdw_simulacion)
+#rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
+#rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
+#
+#rdw_mazo = generar_mazo(rdw_ruta)
+#rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
+#print_sim(rdw_simulacion)
+#
 # infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 # infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]
 # infect_deck = leer_decklist(infect_ruta)

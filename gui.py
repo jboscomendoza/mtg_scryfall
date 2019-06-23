@@ -1,5 +1,5 @@
 import sys
-import api_request as mtg
+import mtg
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QAction, QActionGroup, QApplication, QFrame,
@@ -94,12 +94,15 @@ Introduce los nombres separados por punto y coma (;).
     def showDialog(self):
         archivo = QFileDialog.getOpenFileName(self, "Nuevo decklist", "/home")
         if archivo[0]:
-            deck_plain = mtg.leer_plain_deck(archivo[0])
-            deck_text = mtg.get_decklist_text(deck_plain)
-            deck_text = "".join(deck_text)
+            #deck_plain = mtg.leer_deck_raw(archivo[0])
 
-            self.lbl_deck.setText(deck_text)
+            #deck_text = mtg.get_decklist_text(collection, deck_plain)
+            #deck_text = "".join(deck_text)
+
+            #self.lbl_deck.setText(deck_text)
             self.var_deck = mtg.generar_mazo(archivo[0])
+            decklist_text = self.var_deck["decklist_text"]
+            self.lbl_deck.setText(decklist_text)
 
     def iniciarSim(self):
         if isinstance(self.var_deck, dict):
