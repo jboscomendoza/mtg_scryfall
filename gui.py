@@ -9,6 +9,9 @@ from PyQt5.QtWidgets import (QAction, QActionGroup, QApplication, QFrame,
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+                       
+        self.setStyleSheet(open("style.qss", "r").read())
+
         widget = QWidget()
         self.setCentralWidget(widget)
 
@@ -18,12 +21,9 @@ class MainWindow(QMainWindow):
         bottomFiller = QWidget()
         bottomFiller.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.lbl_deck = QLabel("Carga un decklist en formato .txt")
-        self.lbl_sim = QLabel("Simulación no iniciada")
-        self.lbl_carta = QLabel('''
-Elige cartas a buscar. 
-Introduce los nombres separados por punto y coma (;).
-        ''')
+        self.lbl_deck = QLabel("Ningun decklist abierto.")
+        self.lbl_sim = QLabel("Simulación no iniciada.")
+        self.lbl_carta = QLabel("Elige cartas a buscar.\nIntroduce los nombres separados por punto y coma (;).")
 
         self.btn_abrir = QPushButton("Abrir &deklist", self)
         self.btn_abrir.setStatusTip("Abrir decklist")
@@ -44,15 +44,15 @@ Introduce los nombres separados por punto y coma (;).
         self.var_deck = False
         
         vbox = QVBoxLayout()
-        vbox.setContentsMargins(5, 5, 5, 5)
-        vbox.addWidget(topFiller)
+        vbox.setContentsMargins(10, 5, 10, 5)
         vbox.addWidget(self.btn_abrir)
         vbox.addWidget(self.lbl_carta)
         vbox.addWidget(self.inp_cartas)
         vbox.addWidget(self.btn_simular)
+        vbox.addWidget(topFiller)
         vbox.addWidget(self.lbl_deck)
-        vbox.addWidget(bottomFiller)
         vbox.addWidget(self.lbl_sim)
+        vbox.addWidget(bottomFiller)
         vbox.addWidget(self.btn_cerrar)
 
         self.setWindowTitle("MTG App")
@@ -116,10 +116,10 @@ Introduce los nombres separados por punto y coma (;).
                 carta_buscada = carta_input
             sim_resultado = mtg.generar_simulacion(self.var_deck, carta_buscada)
             sim_texto = mtg.print_sim(sim_resultado)
-            sim_texto = "Carta buscada: " + carta_input + "\n" + sim_texto
+            sim_texto = "Cartas buscadas: " + carta_input + "\n" + sim_texto
             self.lbl_sim.setText(sim_texto)
         else:
-            self.lbl_sim.setText("Carga un deck")
+            self.lbl_sim.setText("Abre un decklist para iniciar simulación.")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
