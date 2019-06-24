@@ -4,10 +4,14 @@ QWidget {
    /* padding: 5px; */
 }
 
-QLineEdit:focus {
-   background-color: #fff;
+QLineEdit {
+   background-color: #e9e9e9;
    color: #333;
    font-weight: bold;
+}
+
+QLineEdit:focus {
+   border-color: #338;
 }
 
 QPushButton {
@@ -15,7 +19,6 @@ QPushButton {
    color: #eee;
    font-weight: bold;
    border-radius: 3px;
-   border-style: outset;
    border-width: 1px;
    border-color: #333;
    height: 30px;
@@ -30,4 +33,18 @@ QPushButton:pressed {
    background-color: #eee;
    color: #338;
    border-style: inset;
+}
+
+QMenu:selected {
+   background-color: #66b;
+   color: #eee;
+}
+
+QMenuBar::item:pressed {
+   background-color: #66b;
+   color: #eee;
+}
+
+QToolBar {
+   border-color: #000;
 }

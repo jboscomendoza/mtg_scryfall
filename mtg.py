@@ -63,7 +63,7 @@ def get_collection(deck_json):
 
 def get_decklist_text(collection, deck_raw):
     main_deck = range(len(collection))
-    deck_data = []
+    deck_data = [["Cantidad", "Nombre", "Costo", "Tipo", "Rareza", "Precio"]]
 
     for elemento in main_deck:
         carta = collection[elemento]
@@ -76,7 +76,7 @@ def get_decklist_text(collection, deck_raw):
         
         costo = carta["mana_cost"]
         if len(costo) == 0:
-            costo = "Land"
+            costo = ""
         else:
             costo = re.sub(r"\W", "", costo)
         
@@ -85,10 +85,11 @@ def get_decklist_text(collection, deck_raw):
         precio = carta["prices"]["usd"]
         
         carta_data = [numero, nombre, costo, tipo, rareza, precio]
-        carta_data = "; ".join(carta_data)
-        carta_data = carta_data + "\n"
+        #carta_data = "; ".join(carta_data)
+        carta_data = carta_data# + "\n"
         
         deck_data.append(carta_data)
+    deck_data = aplanar_lista(deck_data)
     return(deck_data)
 
 
@@ -98,7 +99,7 @@ def generar_mazo(ruta):
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
     decklist_text = get_decklist_text(collection, deck_raw)
-    decklist_text = "".join(decklist_text)
+    #decklist_text = "".join(decklist_text)
     mazo = {
         "decklist": deck_list, 
         "decklist_text": decklist_text, 
