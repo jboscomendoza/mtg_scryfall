@@ -4,15 +4,17 @@ QWidget {
    /* padding: 5px; */
 }
 
-QLineEdit {
+QLineEdit, QTextEdit {
    background-color: #e9e9e9;
    color: #333;
    font-weight: bold;
 }
 
-QLineEdit:focus {
+QLineEdit:focus,QTextEdit:focus {
+   border-width: 3px;
    border-color: #338;
 }
+
 
 QPushButton {
    background-color: #66b;

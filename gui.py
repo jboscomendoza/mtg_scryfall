@@ -5,76 +5,36 @@ from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QAction, QActionGroup, QApplication, QFrame,
         QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy, QVBoxLayout,
         QWidget, QPushButton, QLineEdit, QFileDialog, qApp, QGridLayout, QHBoxLayout,
-        QComboBox)
+        QComboBox, QTextEdit)
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-                       
+        
+        self.var_deck = False
+        self.var_reps = 10
+        
         self.setStyleSheet(open("style.qss", "r").read())
 
-        widget = QWidget()
-        self.setCentralWidget(widget)
+        ventanaApp = QWidget()
+        self.setCentralWidget(ventanaApp)
 
         topFiller = QWidget()
         topFiller.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        bottomFiller = QWidget()
-        bottomFiller.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        self.lbl_deck = QLabel("Decklists en formato .txt para MTGO.")
-        self.lbl_sim = QLabel("")
-        self.lbl_carta = QLabel("Elige cartas a buscar.\nIntroduce los nombres separados por punto y coma (;).")
-
-        self.btn_abrir = QPushButton("Abrir &deklist", self)
-        self.btn_abrir.setStatusTip("Abrir decklist en formato txt para MTGO")
-        self.btn_abrir.clicked.connect(self.showDialog)
-
-        self.inp_cartas = QLineEdit()
-
-        self.btn_simular = QPushButton(u"&Iniciar simulación")
-        self.btn_simular.setStatusTip("Iniciar simulación")
-        self.btn_simular.clicked.connect(self.iniciarSim)
+        self.widget_abrir = self.crearWidgetAbrir()
+        self.widget_rep = self.crearWidgetRep()
+        self.widget_simular = self.crearWidgetSimular()
 
         self.btn_cerrar = QPushButton("&Salir")
         self.btn_cerrar.setStatusTip("Salir")
         self.btn_cerrar.clicked.connect(qApp.quit)
 
-        self.var_deck = False
-        self.var_reps = 10
-        
-        self.crearRed(texto="")
-        self.widget_red = QWidget()
-        #self.widget_red.setLayout(self.mi_red)
-
-        lbl_rep_desc = QLabel(u"Número de iteraciones:")
-
-        self.combo_rep = QComboBox()
-        self.combo_rep.addItem("10")
-        self.combo_rep.addItem("100")
-        self.combo_rep.addItem("1000")
-        self.combo_rep.addItem("10000")
-        self.combo_rep.activated[str].connect(self.eligeReps) 
-
-        self.widget_conteo = QWidget()
-        self.hbox_conteo = QHBoxLayout()
-        self.hbox_conteo.addWidget(lbl_rep_desc)
-        self.hbox_conteo.addWidget(self.combo_rep)
-        self.widget_conteo.setLayout(self.hbox_conteo)
-
-        vbox = QVBoxLayout()
-        vbox.setContentsMargins(10, 5, 10, 5)
-        vbox.addWidget(topFiller)
-        vbox.addWidget(self.btn_abrir)
-        vbox.addWidget(self.lbl_deck)
-        vbox.addWidget(self.widget_red)
-        vbox.addWidget(bottomFiller)
-        vbox.addWidget(self.btn_simular)
-        vbox.addWidget(self.lbl_carta)
-        vbox.addWidget(self.inp_cartas)
-        vbox.addWidget(self.widget_conteo)
-        vbox.addWidget(self.lbl_sim)
-        vbox.addWidget(self.btn_cerrar)
+        red_main = QGridLayout()
+        red_main.setContentsMargins(5, 5, 5, 5)
+        red_main.addWidget(self.widget_abrir, 0, 0)
+        red_main.addWidget(self.widget_simular, 0, 1)
+        red_main.addWidget(self.btn_cerrar, 4, 0, 1, 2)
 
         self.setWindowTitle("MTG App")
         self.setWindowIcon(QIcon("mtg_icon.png"))
@@ -82,10 +42,11 @@ class MainWindow(QMainWindow):
         self.crearMenus()
         self.crearToolbar()
         self.statusBar().showMessage("")
-        widget.setLayout(vbox)
+        
+        ventanaApp.setLayout(red_main)
+
 
     def crearRed(self, texto):
-        #texto = self.var_deck["decklist_text"]
         self.mi_red = QGridLayout()
         # cant, nombre, costo, tipo, rareza, precio
         stats = 6
@@ -96,6 +57,58 @@ class MainWindow(QMainWindow):
         for posicion, stat in zip(posiciones, texto):
             label = QLabel(str(stat))
             self.mi_red.addWidget(label, *posicion)
+
+    def crearWidgetAbrir(self):
+        widget_abrir = QWidget()
+        btn_abrir = QPushButton("Abrir &deklist", self)
+        btn_abrir.setStatusTip("Abrir decklist en formato txt para MTGO")
+        btn_abrir.clicked.connect(self.showDialog)
+        self.lbl_deck = QLabel("Decklists en formato .txt para MTGO.")
+        self.lbl_deck.setAlignment(Qt.AlignCenter)
+        self.crearRed(texto="")
+        self.widget_red = QWidget()
+        box_abrir = QVBoxLayout()
+        box_abrir.addWidget(btn_abrir)
+        box_abrir.addWidget(self.lbl_deck)
+        box_abrir.addWidget(self.widget_red)
+        widget_abrir.setLayout(box_abrir)
+        return(widget_abrir)
+
+    def crearWidgetRep(self):
+        widget_rep = QWidget()
+        lbl_rep_desc = QLabel(u"Número de iteraciones:")
+        combo_rep = QComboBox()
+        combo_rep.addItem("10")
+        combo_rep.addItem("100")
+        combo_rep.addItem("1000")
+        combo_rep.addItem("10000")
+        combo_rep.addItem("100000")
+        combo_rep.activated[str].connect(self.eligeReps)
+        hbox_conteo = QHBoxLayout()
+        hbox_conteo.addWidget(lbl_rep_desc)
+        hbox_conteo.addWidget(combo_rep)
+        widget_rep.setLayout(hbox_conteo)
+        return(widget_rep)
+    
+    def crearWidgetSimular(self):
+        widget_simular  = QWidget()
+        btn_simular = QPushButton(u"&Iniciar simulación")
+        btn_simular.setStatusTip(u"Iniciar simulación")
+        btn_simular.clicked.connect(self.iniciarSim)
+        lbl_carta = QLabel("Elige cartas a buscar, separadas por ;")
+        self.inp_cartas = QLineEdit()
+        self.lbl_sim = QLabel()
+        relleno = QWidget()
+        relleno.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        box_cartas = QVBoxLayout()
+        box_cartas.addWidget(btn_simular)
+        box_cartas.addWidget(lbl_carta)
+        box_cartas.addWidget(self.inp_cartas)
+        box_cartas.addWidget(self.widget_rep)
+        box_cartas.addWidget(self.lbl_sim)
+        box_cartas.addWidget(relleno)
+        widget_simular.setLayout(box_cartas)
+        return(widget_simular)
 
     def eligeReps(self, opcion):
         self.var_reps = int(opcion)
@@ -136,7 +149,6 @@ class MainWindow(QMainWindow):
             decklist_text = self.var_deck["decklist_text"]
             self.lbl_deck.setText("Decklist abierto:")
             self.crearRed(texto=decklist_text)
-            #self.widget_red = QWidget()
             self.widget_red.setLayout(self.mi_red)
 
     def iniciarSim(self):
@@ -152,7 +164,7 @@ class MainWindow(QMainWindow):
             sim_resultado = mtg.generar_simulacion(self.var_deck, carta_buscada, 
                 reps=self.var_reps)
             sim_texto = mtg.print_sim(sim_resultado)
-            sim_texto = "Cartas buscadas: " + carta_input + "\n" + sim_texto
+            sim_texto = "Cartas buscadas:\n" + carta_input + "\n" + sim_texto
             self.lbl_sim.setText(sim_texto)
         else:
             self.lbl_sim.setText("Abre un decklist para iniciar simulación.")
