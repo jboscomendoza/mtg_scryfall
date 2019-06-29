@@ -4,7 +4,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QAction, QActionGroup, QApplication, QFrame,
         QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy, QVBoxLayout,
-        QWidget, QPushButton, QLineEdit, QFileDialog, qApp, QGridLayout)
+        QWidget, QPushButton, QLineEdit, QFileDialog, qApp, QGridLayout, QHBoxLayout,
+        QComboBox)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -39,13 +40,27 @@ class MainWindow(QMainWindow):
         self.btn_cerrar.setStatusTip("Salir")
         self.btn_cerrar.clicked.connect(qApp.quit)
 
-        self.inp_cartas = QLineEdit()
-
         self.var_deck = False
+        self.var_reps = 10
         
         self.crearRed(texto="")
         self.widget_red = QWidget()
         #self.widget_red.setLayout(self.mi_red)
+
+        lbl_rep_desc = QLabel(u"Número de iteraciones:")
+
+        self.combo_rep = QComboBox()
+        self.combo_rep.addItem("10")
+        self.combo_rep.addItem("100")
+        self.combo_rep.addItem("1000")
+        self.combo_rep.addItem("10000")
+        self.combo_rep.activated[str].connect(self.eligeReps) 
+
+        self.widget_conteo = QWidget()
+        self.hbox_conteo = QHBoxLayout()
+        self.hbox_conteo.addWidget(lbl_rep_desc)
+        self.hbox_conteo.addWidget(self.combo_rep)
+        self.widget_conteo.setLayout(self.hbox_conteo)
 
         vbox = QVBoxLayout()
         vbox.setContentsMargins(10, 5, 10, 5)
@@ -57,6 +72,7 @@ class MainWindow(QMainWindow):
         vbox.addWidget(self.btn_simular)
         vbox.addWidget(self.lbl_carta)
         vbox.addWidget(self.inp_cartas)
+        vbox.addWidget(self.widget_conteo)
         vbox.addWidget(self.lbl_sim)
         vbox.addWidget(self.btn_cerrar)
 
@@ -80,6 +96,9 @@ class MainWindow(QMainWindow):
         for posicion, stat in zip(posiciones, texto):
             label = QLabel(str(stat))
             self.mi_red.addWidget(label, *posicion)
+
+    def eligeReps(self, opcion):
+        self.var_reps = int(opcion)
 
     def crearAcciones(self):
         self.abrirAct = QAction(QIcon("icons/file-plus.svg"), 
@@ -130,7 +149,8 @@ class MainWindow(QMainWindow):
                     carta_buscada.append(elemento.strip())
             else:
                 carta_buscada = carta_input
-            sim_resultado = mtg.generar_simulacion(self.var_deck, carta_buscada)
+            sim_resultado = mtg.generar_simulacion(self.var_deck, carta_buscada, 
+                reps=self.var_reps)
             sim_texto = mtg.print_sim(sim_resultado)
             sim_texto = "Cartas buscadas: " + carta_input + "\n" + sim_texto
             self.lbl_sim.setText(sim_texto)
