@@ -24,8 +24,13 @@ def get_tipo(carta):
 def leer_deck_raw(archivo):
     deck_raw = open(archivo, "r")
     deck_raw = deck_raw.readlines()
-    return(deck_raw)
-
+    deck_clean = []
+    for carta in deck_raw:
+        if not carta.startswith(("S", "/")):
+            carta = re.sub(r"\[.*?\]", "", carta)
+            carta = re.sub(" {2,}", " ", carta)
+            deck_clean.append(carta)
+    return(deck_clean)
 
 def crear_deck_list(deck_raw):
     deck_list = []
@@ -135,7 +140,9 @@ def probar_draws(cartas_buscadas, trials):
         draws.append(exito)
     hits = sum(draws)
     misses = len(draws) - hits
-    hit_rate = hits / len(draws)
+    hit_rate = (hits / len(draws)) * 100
+    hit_rate = round(hit_rate, 2)
+    hit_rate = str(hit_rate) + "%"
     resultados = {"Hits": hits, "Misses": misses, "Hit rate": hit_rate}
     return(resultados)
 
@@ -162,7 +169,7 @@ SCRYFALL = "https://api.scryfall.com"
 CARDNAME = "/cards/named?fuzzy="
 COLLECTION = "/cards/collection"
 
-
+leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
 #rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
 #rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
 #
