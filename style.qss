@@ -10,8 +10,10 @@ QLineEdit, QTextEdit {
    font-weight: bold;
 }
 
+
 QLineEdit:focus,QTextEdit:focus {
    border-width: 3px;
+   background-color: #eee;
    border-color: #338;
 }
 

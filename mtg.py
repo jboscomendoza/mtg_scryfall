@@ -1,6 +1,9 @@
 import requests
 import json
 import re
+import io
+from PIL import Image
+from PIL.ImageQt import ImageQt
 from random import choices, seed
 
 # Funciones auxiliares
@@ -87,6 +90,7 @@ def get_decklist_text(collection, deck_raw):
         
         tipo = get_tipo(carta["type_line"])
         rareza = carta["rarity"]
+        rareza = rareza.capitalize()
         precio = carta["prices"]["usd"]
         
         carta_data = [numero, nombre, costo, tipo, rareza, precio]
@@ -165,11 +169,36 @@ def print_sim(simulacion):
     return(sim_texto)
 
 
+def get_carta_pic(nombre_carta):
+    carta_url = SCRYFALL + CARDNAME + nombre_carta + "&format=image&version=normal"
+    carta_data = requests.get(carta_url)
+    carta_data = carta_data.content
+    carta_stream = io.BytesIO(carta_data)
+    carta_pic = Image.open(carta_stream)
+    return(carta_pic)
+
+
 SCRYFALL = "https://api.scryfall.com"
 CARDNAME = "/cards/named?fuzzy="
 COLLECTION = "/cards/collection"
 
-leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
+#from PIL import Image
+#import io
+#
+#carta = get_carta_pic("Shock")
+#carta_stream = io.BytesIO(carta)
+#carta_file = Image.open(carta_stream)
+#QPixmap.fromImage(carta_file)
+#
+#carta = open("carta_reverso.jpg", "rb")
+#carta_bin = carta.read()
+#carta_stream = io.BytesIO(carta)
+#carta_file = Image.open(carta_stream)
+#QPixmap.fromImage(carta_file)
+
+#rdw_mazo["decklist_text"]
+
+#leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
 #rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
 #rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
 #
