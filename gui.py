@@ -1,6 +1,6 @@
 import sys
 import mtg
-import urllib
+import re
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence, QIcon, QPixmap
@@ -13,39 +13,28 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         
+        self.setStyleSheet(open("style.qss", "r").read())
+
         self.var_deck = False
         self.var_reps = 10
-        
-        self.pic_carta = QLabel()
-        self.pic_pixmap = QPixmap("carta_reverso.jpg")
-        self.pic_pixmap = self.pic_pixmap.scaledToHeight(520)
-        self.pic_carta.setPixmap(self.pic_pixmap)
-
-
-        self.setStyleSheet(open("style.qss", "r").read())
 
         ventanaApp = QWidget()
         self.setCentralWidget(ventanaApp)
 
-        topFiller = QWidget()
-        topFiller.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
         self.widget_abrir = self.crearWidgetAbrir()
         self.widget_rep = self.crearWidgetRep()
         self.widget_simular = self.crearWidgetSimular()
+        self.widget_pic = self.crearWidgetPic()
 
         self.btn_cerrar = QPushButton("&Salir")
         self.btn_cerrar.setStatusTip("Salir")
         self.btn_cerrar.clicked.connect(qApp.quit)
-        
-
-        #pic.linkHovered.connect(self.iniciarSim)
 
         red_main = QGridLayout()
         red_main.setContentsMargins(5, 5, 5, 5)
-        red_main.addWidget(self.widget_abrir, 0, 0)
+        red_main.addWidget(self.widget_abrir,   0, 0)
         red_main.addWidget(self.widget_simular, 0, 1)
-        red_main.addWidget(self.pic_carta, 0 ,2)
+        red_main.addWidget(self.widget_pic,     0, 2)
         red_main.addWidget(self.btn_cerrar, 4, 0, 1, 3)
 
         self.setWindowTitle("MTG App")
@@ -56,15 +45,6 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("")
         
         ventanaApp.setLayout(red_main)
-
-    def cambiar_pic(self):
-        nombre_carta = "Shock"
-        carta_pic = mtg.get_carta_pic(nombre_carta)
-        carta_pic = ImageQt(carta_pic)
-        carta_pixmap = QPixmap.fromImage(carta_pic)
-        carta_pixmap = carta_pixmap.scaledToHeight(520)
-        self.pic_carta.setPixmap(carta_pixmap)
-        return("ok")
 
     def crearRed(self, texto):
         self.mi_red = QGridLayout()
@@ -83,6 +63,20 @@ class MainWindow(QMainWindow):
             else:
                 label = QLabel(str(stat))
             self.mi_red.addWidget(label, *posicion)
+
+    def crearWidgetPic(self):
+        widget_pic = QWidget()
+        self.pic_carta = QLabel()
+        self.pic_pixmap = QPixmap("carta_reverso.jpg")
+        self.pic_pixmap = self.pic_pixmap.scaledToHeight(550)
+        self.pic_carta.setPixmap(self.pic_pixmap)
+        relleno = QWidget()
+        relleno.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        box_pic = QVBoxLayout()
+        box_pic.addWidget(self.pic_carta)
+        box_pic.addWidget(relleno)
+        widget_pic.setLayout(box_pic)
+        return(widget_pic)
 
     def crearWidgetAbrir(self):
         widget_abrir = QWidget()
@@ -121,18 +115,6 @@ class MainWindow(QMainWindow):
     
     def crearWidgetSimular(self):
         widget_simular = QWidget()
-        
-        #pic_url = "https://img.scryfall.com/cards/small/front/7/3/##73542493-cd0b-4bb7-a5b8-8f889c76e4d6.jpg?1562302708"
-        #pic_data = urllib.request.urlopen(pic_url).read()
-        #pixmap = QPixmap()
-        #pixmap.loadFromData(pic_data)
-        pic = QLabel()
-        contenido_pic = "<a href=none>Texto para presionar</a>"
-        pic.setText(contenido_pic)
-        pic.linkActivated.connect(self.cambiar_pic)
-        #pic.linkHovered.connect(self.iniciarSim)
-
-        
         btn_simular = QPushButton(u"&Iniciar simulación")
         btn_simular.setStatusTip(u"Iniciar simulación")
         btn_simular.clicked.connect(self.iniciarSim)
@@ -143,7 +125,6 @@ class MainWindow(QMainWindow):
         relleno.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         box_cartas = QVBoxLayout()
         box_cartas.addWidget(btn_simular)
-        box_cartas.addWidget(pic)
         box_cartas.addWidget(lbl_carta)
         box_cartas.addWidget(self.inp_cartas)
         box_cartas.addWidget(self.widget_rep)
@@ -151,9 +132,6 @@ class MainWindow(QMainWindow):
         box_cartas.addWidget(relleno)
         widget_simular.setLayout(box_cartas)
         return(widget_simular)
-
-    def eligeReps(self, opcion):
-        self.var_reps = int(opcion)
 
     def crearAcciones(self):
         self.abrirAct = QAction(QIcon("icons/file-plus.svg"), 
@@ -192,6 +170,21 @@ class MainWindow(QMainWindow):
             self.lbl_deck.setText("Decklist abierto:")
             self.crearRed(texto=decklist_text)
             self.widget_red.setLayout(self.mi_red)
+
+    def eligeReps(self, opcion):
+        self.var_reps = int(opcion)
+
+    def cambiar_pic(self):
+        sender = self.sender()
+        nombre_carta = sender.text()
+        nombre_carta = re.sub("<.*?>", "", nombre_carta)
+        carta_pic = mtg.get_carta_pic(nombre_carta)
+        carta_pic = ImageQt(carta_pic)
+        carta_pixmap = QPixmap.fromImage(carta_pic)
+        carta_pixmap = carta_pixmap.scaledToHeight(550)
+        self.pic_carta.setPixmap(carta_pixmap)
+        self.bingo.setText(nombre_carta)
+        return("ok")
 
     def iniciarSim(self):
         if isinstance(self.var_deck, dict):
