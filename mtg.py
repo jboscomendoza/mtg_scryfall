@@ -16,10 +16,17 @@ def aplanar_lista(lista):
 
 def get_tipo(carta):
     # Reemplaza subtipos
-    carta = re.sub(" . (.*)", "", carta)
+    carta = re.sub(r" . (.*)", "", carta)
     # Quita super tipos mas comunes
-    carta = re.sub("(Legendary|Snow|Tribal|Basic) ", "", carta)
+    carta = re.sub(r"(Legendary|Snow|Tribal|Basic) ", "", carta)
     return(carta)
+
+
+def checar_deck(deck_clean):
+    # Patron para: numero de cartas, nombre de carta
+    patron_deck = r"^\d{1,2} \w+"
+    estado = all(re.match(patron_deck, elemento) for elemento in deck_clean)
+    return(estado)
 
 
 # Lectura de decklist
@@ -31,9 +38,12 @@ def leer_deck_raw(archivo):
     for carta in deck_raw:
         if not carta.startswith(("S", "/")):
             carta = re.sub(r"\[.*?\]", "", carta)
-            carta = re.sub(" {2,}", " ", carta)
+            carta = re.sub(r" {2,}", " ", carta)
             deck_clean.append(carta)
-    return(deck_clean)
+    if checar_deck(deck_clean):
+        return(deck_clean)
+    else:
+        return("Decklist invalido")
 
 def crear_deck_list(deck_raw):
     deck_list = []
@@ -41,7 +51,7 @@ def crear_deck_list(deck_raw):
     for linea in deck_raw:
         nombre = re.sub(r"^(\d)+ ", "", linea)
         nombre = re.sub(r"\n", "", nombre)
-        cantidad = re.sub(" .*", "", linea)
+        cantidad = re.sub(r" .*", "", linea)
         cantidad = re.sub(r"\n", "", cantidad)
         try:
             cantidad = int(cantidad)
@@ -80,7 +90,7 @@ def get_decklist_text(collection, deck_raw):
         numero = 0
         for texto in deck_raw:
             if nombre in texto:
-                numero = re.sub(" .*\n", "", texto)
+                numero = re.sub(r" .*\n", "", texto)
         
         costo = carta["mana_cost"]
         if len(costo) == 0:
@@ -104,6 +114,8 @@ def get_decklist_text(collection, deck_raw):
 
 def generar_mazo(ruta):
     deck_raw = leer_deck_raw(ruta)
+    if isinstance(deck_raw, str):
+        return(deck_raw)
     deck_list = crear_deck_list(deck_raw)
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
@@ -182,29 +194,16 @@ SCRYFALL = "https://api.scryfall.com"
 CARDNAME = "/cards/named?fuzzy="
 COLLECTION = "/cards/collection"
 
-#from PIL import Image
-#import io
-#
-#carta = get_carta_pic("Shock")
-#carta_stream = io.BytesIO(carta)
-#carta_file = Image.open(carta_stream)
-#QPixmap.fromImage(carta_file)
-#
-#carta = open("carta_reverso.jpg", "rb")
-#carta_bin = carta.read()
-#carta_stream = io.BytesIO(carta)
-#carta_file = Image.open(carta_stream)
-#QPixmap.fromImage(carta_file)
 
-#rdw_mazo["decklist_text"]
-
-#leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
-#rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
-#rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
+# leer_deck_raw("decklist_invalido.txt")
+# generar_mazo("decklist_invalido.txt")
+# leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
 #
-#rdw_mazo = generar_mazo(rdw_ruta)
-#rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
-#print_sim(rdw_simulacion)
+# rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
+# rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
+# rdw_mazo = generar_mazo(rdw_ruta)
+# rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
+# print_sim(rdw_simulacion)
 #
 # infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 # infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]
