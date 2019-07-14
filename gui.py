@@ -163,11 +163,17 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.salirAct)
 
     def showDialog(self):
-        archivo = QFileDialog.getOpenFileName(self, "Nuevo decklist", "/home")
+        mensaje_error = "<b>Decklist inválido. Verifica tu archivo.</b>"
+        archivo = QFileDialog.getOpenFileName(self, "Abrir decklist", "/home", 
+            "Archivos decklists (*.txt *.dec *.mwDeck)")
         if archivo[0]:
             self.var_deck = mtg.generar_mazo(archivo[0])
+        if isinstance(self.var_deck, str):
+            self.lbl_deck.setText(mensaje_error)
+        else:
             decklist_text = self.var_deck["decklist_text"]
-            self.lbl_deck.setText("Decklist abierto:")
+            self.lbl_deck.setText("Decklist abierto.")
+            self.lbl_deck.clear()
             self.crearRed(texto=decklist_text)
             self.widget_red.setLayout(self.mi_red)
 
