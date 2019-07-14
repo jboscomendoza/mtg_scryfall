@@ -1,0 +1,5 @@
+Este es un documento de texto
+de prueba
+para verificar que
+no lea archivos que no son del formato
+correcto.
