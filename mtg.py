@@ -114,6 +114,8 @@ def get_decklist_text(collection, deck_raw):
 
 def generar_mazo(ruta):
     deck_raw = leer_deck_raw(ruta)
+    if isinstance(deck_raw, str):
+        return(deck_raw)
     deck_list = crear_deck_list(deck_raw)
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
@@ -194,6 +196,7 @@ COLLECTION = "/cards/collection"
 
 
 # leer_deck_raw("decklist_invalido.txt")
+# generar_mazo("decklist_invalido.txt")
 # leer_deck_raw("Standard_Esper_Hero_Control_by_Brad_Nelson.mwDeck")
 #
 # rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
