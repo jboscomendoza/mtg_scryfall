@@ -14,12 +14,16 @@ def aplanar_lista(lista):
             flat.append(elemento)
     return(flat)
 
-def get_tipo(carta):
-    # Reemplaza subtipos
-    carta = re.sub(r" . (.*)", "", carta)
-    # Quita super tipos mas comunes
-    carta = re.sub(r"(Legendary|Snow|Tribal|Basic) ", "", carta)
-    return(carta)
+
+# Lectura de decklist
+def leer_deck_raw(archivo):
+    deck_raw = open(archivo, "r")
+    deck_raw = deck_raw.readlines()
+    deck_clean = limpiar_deck_raw(deck_raw)
+    if checar_deck(deck_clean):
+        return(deck_clean)
+    else:
+        return("Decklist invalido")
 
 
 def checar_deck(deck_clean):
@@ -29,41 +33,36 @@ def checar_deck(deck_clean):
     return(estado)
 
 
-# Lectura de decklist
-# "S" al inicio indica que inicia texto de "Sideboard"
-def leer_deck_raw(archivo):
-    deck_raw = open(archivo, "r")
-    deck_raw = deck_raw.readlines()
-    deck_clean = []
+def limpiar_deck_raw(deck_raw):
+    deck_main = []
     for carta in deck_raw:
+        carta = carta.strip()
         if not carta.startswith(("S", "/")):
-            carta = re.sub(r"\[.*?\]", "", carta)
-            carta = re.sub(r" {2,}", " ", carta)
-            deck_clean.append(carta)
-    if checar_deck(deck_clean):
-        return(deck_clean)
-    else:
-        return("Decklist invalido")
+            deck_main.append(carta)
+    deck_clean = []
+    for carta in deck_main:
+        carta = re.sub(r"\[.*?\]|\n", "", carta)
+        carta = re.sub(r" {2,}", " ", carta)
+        deck_clean.append(carta)
+    return(deck_clean)
+
 
 def crear_deck_list(deck_raw):
     deck_list = []
-    i = 0
     for linea in deck_raw:
         nombre = re.sub(r"^(\d)+ ", "", linea)
-        nombre = re.sub(r"\n", "", nombre)
         cantidad = re.sub(r" .*", "", linea)
-        cantidad = re.sub(r"\n", "", cantidad)
         try:
             cantidad = int(cantidad)
         except ValueError:
             cantidad = 0
-        i += 1
         deck_list.append([cantidad, nombre])
     return(deck_list)
 
 
 def crear_json(deck_list):
     deck_json = []
+    # El API pide que todas las keys se llamen "name", por eso no se usa un dict
     for carta in deck_list:
         llave = "{\"name\": \"" + carta[1] + "\"}"
         deck_json.append(llave)
@@ -82,34 +81,49 @@ def get_collection(deck_json):
 def get_decklist_text(collection, deck_raw):
     main_deck = range(len(collection))
     deck_data = [["Cantidad", "Nombre", "Costo", "Tipo", "Rareza", "Precio"]]
-
     for elemento in main_deck:
         carta = collection[elemento]
-        nombre = carta["name"]
-        
-        numero = 0
-        for texto in deck_raw:
-            if nombre in texto:
-                numero = re.sub(r" .*\n", "", texto)
-        
-        costo = carta["mana_cost"]
-        if len(costo) == 0:
-            costo = ""
-        else:
-            costo = re.sub(r"\W", "", costo)
-        
-        tipo = get_tipo(carta["type_line"])
-        rareza = carta["rarity"]
-        rareza = rareza.capitalize()
-        precio = carta["prices"]["usd"]
-        
-        carta_data = [numero, nombre, costo, tipo, rareza, precio]
-        #carta_data = "; ".join(carta_data)
-        carta_data = carta_data# + "\n"
-        
+        carta_data = get_carta_data(carta, deck_raw)
         deck_data.append(carta_data)
     deck_data = aplanar_lista(deck_data)
     return(deck_data)
+
+
+def get_carta_data(carta, deck_raw):
+    nombre = carta["name"]
+    numero = get_numero(nombre, deck_raw)
+    costo = get_costo(carta)
+    tipo = get_tipo(carta)
+    rareza = carta["rarity"].capitalize()
+    precio = carta["prices"]["usd"]
+    
+    carta_data = [numero, nombre, costo, tipo, rareza, precio]
+    return(carta_data)
+
+
+def get_numero(nombre, deck_raw):
+    for texto in deck_raw:
+        if nombre in texto:
+            numero = re.sub(r"\D", "", texto)
+    return(numero)
+
+
+def get_tipo(carta):
+    tipo = carta["type_line"]
+    # Reemplaza subtipos
+    tipo = re.sub(r" . (.*)", "", tipo)
+    # Quita super tipos mas comunes
+    tipo = re.sub(r"(Legendary|Snow|Tribal|Basic) ", "", tipo)
+    return(tipo)
+
+
+def get_costo(carta):
+    costo = carta["mana_cost"]
+    if len(costo) == 0:
+        costo = ""
+    else:
+        costo = re.sub(r"\W", "", costo)
+    return(costo)
 
 
 def generar_mazo(ruta):
@@ -120,7 +134,6 @@ def generar_mazo(ruta):
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
     decklist_text = get_decklist_text(collection, deck_raw)
-    #decklist_text = "".join(decklist_text)
     mazo = {
         "decklist": deck_list, 
         "decklist_text": decklist_text, 
@@ -180,7 +193,7 @@ def print_sim(simulacion):
     sim_texto = "".join(sim_texto)
     return(sim_texto)
 
-
+# Pedir pic del API
 def get_carta_pic(nombre_carta):
     carta_url = SCRYFALL + CARDNAME + nombre_carta + "&format=image&version=normal"
     carta_data = requests.get(carta_url)
@@ -207,12 +220,11 @@ COLLECTION = "/cards/collection"
 #
 # infect_ruta = "Modern_Infect_by_sirpuffsalot.txt"
 # infect_buscadas = ["Glistener Elf", "Vines of Vastwood"]
-# infect_deck = leer_decklist(infect_ruta)
-#
-# infect_deck = leer_decklist(infect_ruta)
+# infect_deck_raw = leer_deck_raw(infect_ruta)
+# infect_deck = crear_deck_list(infect_deck_raw)
 # infect_json = crear_json(infect_deck)
 # infect_collection = get_collection(infect_json)
-# infect_stats = crear_stats(infect_collection)
+# get_decklist_text(infect_collection, infect_deck_raw)
 # 
 # infect_pool = crear_pool(infect_deck)
 # infect_trials = crear_trials(infect_pool, 5000)
