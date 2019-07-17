@@ -189,7 +189,6 @@ class MainWindow(QMainWindow):
         carta_pixmap = QPixmap.fromImage(carta_pic)
         carta_pixmap = carta_pixmap.scaledToHeight(550)
         self.pic_carta.setPixmap(carta_pixmap)
-        self.bingo.setText(nombre_carta)
         return("ok")
 
     def iniciarSim(self):
