@@ -39,6 +39,8 @@ def limpiar_deck_raw(deck_raw):
         carta = carta.strip()
         if not carta.startswith(("S", "/")):
             deck_main.append(carta)
+        else:
+            break
     deck_clean = []
     for carta in deck_main:
         carta = re.sub(r"\[.*?\]|\n", "", carta)
