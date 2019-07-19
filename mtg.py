@@ -205,6 +205,18 @@ def get_carta_pic(nombre_carta):
     return(carta_pic)
 
 
+def costo_promedio(mazo):
+    pool = crear_pool(mazo["decklist"])
+    costos = []
+    for carta in pool:
+        for entrada in mazo["collection"]:
+            if entrada["name"] == carta:
+                costos.append(int(entrada["cmc"]))
+    costos = list(filter(lambda a: a != 0, costos))
+    promedio = sum(costos) / len(costos)
+    return(promedio)
+
+
 SCRYFALL = "https://api.scryfall.com"
 CARDNAME = "/cards/named?fuzzy="
 COLLECTION = "/cards/collection"
