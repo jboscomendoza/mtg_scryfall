@@ -136,18 +136,20 @@ def generar_mazo(ruta):
     mazo_json = crear_json(deck_list)
     collection = get_collection(mazo_json)
     decklist_text = get_decklist_text(collection, deck_raw)
+    pool = crear_pool(deck_list)
     mazo = {
         "decklist": deck_list, 
         "decklist_text": decklist_text, 
-        "collection": collection
+        "collection": collection,
+        "pool": pool
     }
     return(mazo)
 
 
 # Simulacion
-def crear_pool(deck):
+def crear_pool(deck_list):
     pool = []
-    for elemento in deck:
+    for elemento in deck_list:
         copias = elemento[0] * [elemento[1]]
         pool.append(copias)
     pool = aplanar_lista(pool)
@@ -205,16 +207,30 @@ def get_carta_pic(nombre_carta):
     return(carta_pic)
 
 
-def costo_promedio(mazo):
-    pool = crear_pool(mazo["decklist"])
+def costos(mazo):
+    pool = mazo["pool"]
     costos = []
     for carta in pool:
         for entrada in mazo["collection"]:
             if entrada["name"] == carta:
                 costos.append(int(entrada["cmc"]))
     costos = list(filter(lambda a: a != 0, costos))
-    promedio = sum(costos) / len(costos)
-    return(promedio)
+    return(costos)
+
+
+def costo_promedio(costos):
+    return(sum(costos) / len(costos))
+
+
+def mana_curve(costos):
+    unicos = list(set(costos))
+    curva = []
+    for cmc in unicos:
+        conteo = costos.count(cmc)
+        cuantos = "|" * conteo
+        curva.append(cuantos)
+    mana_curve = dict(zip(unicos, curva))
+    return(mana_curve)
 
 
 SCRYFALL = "https://api.scryfall.com"
@@ -229,6 +245,11 @@ COLLECTION = "/cards/collection"
 # rdw_ruta = "Standard_Red_Deck_Wins_by_Adam_Bink.txt"
 # rdw_buscadas = ["Mountain", "Fanatical Firebrand", "Light Up the Stage"]
 # rdw_mazo = generar_mazo(rdw_ruta)
+#
+# rdw_costos = costos(rdw_mazo)
+# costo_promedio(rdw_costos)
+# mana_curve(rdw_costos)
+#
 # rdw_simulacion = generar_simulacion(rdw_mazo, rdw_buscadas, 10000)
 # print_sim(rdw_simulacion)
 #
